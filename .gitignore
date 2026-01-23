@@ -1,0 +1,6 @@
+venv
+__pycache__
+databricks_mcp_server/__pycache__
+databricks_mcp_server/common/__pycache__
+databricks_mcp_server/services/__pycache__
+.vscode
