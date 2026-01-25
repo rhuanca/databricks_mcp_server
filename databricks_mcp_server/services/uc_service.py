@@ -220,7 +220,7 @@ def register_uc_tools(server, tools, tool_handlers):
     
     async def handle_uc_list_catalogs(arguments: dict):
         """Handle catalog listing."""
-        from mcp.types import TextContent, CallToolResult
+        from mcp.types import TextContent
         
         try:
             result = list_unity_catalogs(
@@ -228,13 +228,13 @@ def register_uc_tools(server, tools, tool_handlers):
                 max_results=arguments.get("max_results"),
                 page_token=arguments.get("page_token")
             )
-            return CallToolResult(content=[TextContent(type="text", text=f"Catalogs listed successfully: {result}")])
+            return [TextContent(type="text", text=f"Catalogs listed successfully: {result}")]
         except Exception as e:
-            return CallToolResult(content=[TextContent(type="text", text=f"Failed to list catalogs: {str(e)}")])
+            return [TextContent(type="text", text=f"Failed to list catalogs: {str(e)}")]
     
     async def handle_uc_list_tables(arguments: dict):
         """Handle table listing."""
-        from mcp.types import TextContent, CallToolResult
+        from mcp.types import TextContent
         
         try:
             result = list_unity_tables(
@@ -248,19 +248,19 @@ def register_uc_tools(server, tools, tool_handlers):
                 include_browse=arguments.get("include_browse"),
                 include_manifest_capabilities=arguments.get("include_manifest_capabilities")
             )
-            return CallToolResult(content=[TextContent(type="text", text=f"Tables listed successfully: {result}")])
+            return [TextContent(type="text", text=f"Tables listed successfully: {result}")]
         except Exception as e:
-            return CallToolResult(content=[TextContent(type="text", text=f"Failed to list tables: {str(e)}")])
+            return [TextContent(type="text", text=f"Failed to list tables: {str(e)}")]
     
     async def handle_uc_get_table_info(arguments: dict):
         """Handle table info retrieval."""
-        from mcp.types import TextContent, CallToolResult
+        from mcp.types import TextContent
         
         try:
             result = get_unity_table_info(arguments["full_table_name"])
-            return CallToolResult(content=[TextContent(type="text", text=f"Table info retrieved successfully: {result}")])
+            return [TextContent(type="text", text=f"Table info retrieved successfully: {result}")]
         except Exception as e:
-            return CallToolResult(content=[TextContent(type="text", text=f"Failed to get table info: {str(e)}")])
+            return [TextContent(type="text", text=f"Failed to get table info: {str(e)}")]
     
     # Register the tools and handlers
     tools.append(list_uc_tools)

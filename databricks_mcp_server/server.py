@@ -106,7 +106,8 @@ def _register_protocol_handlers(
         arguments = request.params.arguments
         if name not in tool_handlers:
             raise ValueError(f"Unknown tool: {name}")
-        return await tool_handlers[name](arguments)
+        content = await tool_handlers[name](arguments)
+        return CallToolResult(content=content)
 
     # Register handlers
     handlers = {

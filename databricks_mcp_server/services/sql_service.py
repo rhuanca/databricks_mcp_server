@@ -105,7 +105,7 @@ def register_sql_tools(server, tools, tool_handlers) -> None:
 
     async def handle_sql_execute_statement(arguments: dict):
         """Handle SQL statement execution."""
-        from mcp.types import TextContent, CallToolResult
+        from mcp.types import TextContent
 
         try:
             result = execute_sql_statement(
@@ -121,9 +121,9 @@ def register_sql_tools(server, tools, tool_handlers) -> None:
                 byte_limit=arguments.get("byte_limit"),
                 row_limit=arguments.get("row_limit")
             )
-            return CallToolResult(content=[TextContent(type="text", text=f"SQL execution successful: {result}")])
+            return [TextContent(type="text", text=f"SQL execution successful: {result}")]
         except Exception as e:
-            return CallToolResult(content=[TextContent(type="text", text=f"SQL execution failed: {str(e)}")])
+            return [TextContent(type="text", text=f"SQL execution failed: {str(e)}")]
 
     # Register the tools and handlers
     tools.append(list_sql_tools)

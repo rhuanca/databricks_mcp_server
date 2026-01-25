@@ -240,7 +240,7 @@ def register_jobs_tools(server, tools, tool_handlers):
     
     async def handle_jobs_list(arguments: dict):
         """Handle job listing."""
-        from mcp.types import TextContent, CallToolResult
+        from mcp.types import TextContent
         
         try:
             result = list_jobs(
@@ -249,23 +249,23 @@ def register_jobs_tools(server, tools, tool_handlers):
                 name=arguments.get("name"),
                 page_token=arguments.get("page_token")
             )
-            return CallToolResult(content=[TextContent(type="text", text=f"Jobs listed successfully: {result}")])
+            return [TextContent(type="text", text=f"Jobs listed successfully: {result}")]
         except Exception as e:
-            return CallToolResult(content=[TextContent(type="text", text=f"Failed to list jobs: {str(e)}")])
+            return [TextContent(type="text", text=f"Failed to list jobs: {str(e)}")]
     
     async def handle_jobs_get(arguments: dict):
         """Handle job details retrieval."""
-        from mcp.types import TextContent, CallToolResult
+        from mcp.types import TextContent
         
         try:
             result = get_job(arguments["job_id"])
-            return CallToolResult(content=[TextContent(type="text", text=f"Job details retrieved successfully: {result}")])
+            return [TextContent(type="text", text=f"Job details retrieved successfully: {result}")]
         except Exception as e:
-            return CallToolResult(content=[TextContent(type="text", text=f"Failed to get job details: {str(e)}")])
+            return [TextContent(type="text", text=f"Failed to get job details: {str(e)}")]
     
     async def handle_jobs_list_runs(arguments: dict):
         """Handle job runs listing."""
-        from mcp.types import TextContent, CallToolResult
+        from mcp.types import TextContent
         
         try:
             result = list_job_runs(
@@ -278,9 +278,9 @@ def register_jobs_tools(server, tools, tool_handlers):
                 start_time_from=arguments.get("start_time_from"),
                 start_time_to=arguments.get("start_time_to")
             )
-            return CallToolResult(content=[TextContent(type="text", text=f"Job runs listed successfully: {result}")])
+            return [TextContent(type="text", text=f"Job runs listed successfully: {result}")]
         except Exception as e:
-            return CallToolResult(content=[TextContent(type="text", text=f"Failed to list job runs: {str(e)}")])
+            return [TextContent(type="text", text=f"Failed to list job runs: {str(e)}")]
     
     # Register the tools and handlers
     tools.append(list_jobs_tools)
