@@ -3,8 +3,37 @@ name = "databricks-mcp-server"
 version = "0.1.0"
 description = "Unified Model Context Protocol server for Databricks"
 readme = "README.md"
+license = "MIT"
 requires-python = ">=3.11"
+authors = [
+    {name = "Databricks MCP Server Team"},
+]
+maintainers = [
+    {name = "Databricks MCP Server Team"},
+]
+keywords = ["databricks", "mcp", "model-context-protocol", "ai", "ml"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Distributed Computing",
+]
 dependencies = [
     "mcp[cli]>=1.25.0",
     "requests>=2.32.5",
 ]
+
+[project.urls]
+Homepage = "https://github.com/databricks/databricks-mcp-server"
+Repository = "https://github.com/databricks/databricks-mcp-server"
+Issues = "https://github.com/databricks/databricks-mcp-server/issues"
+Changelog = "https://github.com/databricks/databricks-mcp-server/blob/main/CHANGELOG.md"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

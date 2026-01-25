@@ -117,54 +117,112 @@ def list_workspace_contents(
 def register_ws_tools(mcp_instance):
     """Register Workspace service tools with the MCP server"""
     
-    @mcp_instance.tool()
-    def ws_download_notebook(
-        path: str, 
-        format: str = "SOURCE", 
-        direct_download: bool = False
-    ) -> dict:
-        """
-        Tool to download a notebook from Databricks workspace.
-        """
+    async def list_ws_tools():
+        """List available Workspace tools."""
+        from mcp.types import Tool
+        return [
+            Tool(
+                name="ws_download_notebook",
+                description="Download a notebook from Databricks workspace.",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "description": "The absolute path of the notebook or directory to export"
+                        },
+                        "format": {
+                            "type": "string",
+                            "default": "SOURCE",
+                            "description": "The format of the exported file"
+                        },
+                        "direct_download": {
+                            "type": "boolean",
+                            "default": False,
+                            "description": "If True, the response is the exported file itself"
+                        }
+                    },
+                    "required": ["path"]
+                }
+            ),
+            Tool(
+                name="ws_get_status",
+                description="Get the status of a workspace object or directory.",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "description": "The absolute path of the notebook or directory"
+                        }
+                    },
+                    "required": ["path"]
+                }
+            ),
+            Tool(
+                name="ws_list_contents",
+                description="List contents of workspace directory.",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "description": "The absolute path of the notebook or directory"
+                        },
+                        "notebooks_modified_after": {
+                            "type": "integer",
+                            "description": "UTC timestamp in milliseconds to filter notebooks modified after this time"
+                        }
+                    },
+                    "required": ["path"]
+                }
+            )
+        ]
+    
+    async def handle_ws_download_notebook(arguments: dict):
+        """Handle notebook download."""
+        from mcp.types import TextContent
+        
         try:
             content = download_databricks_notebook(
-                path=path, 
-                format=format, 
-                direct_download=direct_download
+                path=arguments["path"],
+                format=arguments.get("format", "SOURCE"),
+                direct_download=arguments.get("direct_download", False)
             )
             if content:
                 # Convert bytes to string for JSON serialization
                 content_str = content.decode('utf-8') if isinstance(content, bytes) else content
-                return {"status": "success", "content": content_str}
+                return [TextContent(type="text", text=f"Notebook downloaded successfully: {content_str}")]
             else:
-                return {"status": "error", "message": "No content returned"}
+                return [TextContent(type="text", text="No content returned")]
         except Exception as e:
-            return {"status": "error", "message": str(e)}
-
-    @mcp_instance.tool()
-    def ws_get_status(path: str) -> dict:
-        """
-        Tool to get the status of a workspace object or directory.
-        """
+            return [TextContent(type="text", text=f"Failed to download notebook: {str(e)}")]
+    
+    async def handle_ws_get_status(arguments: dict):
+        """Handle workspace status retrieval."""
+        from mcp.types import TextContent
+        
         try:
-            result = get_workspace_status(path)
-            return {"status": "success", "data": result}
+            result = get_workspace_status(arguments["path"])
+            return [TextContent(type="text", text=f"Workspace status retrieved successfully: {result}")]
         except Exception as e:
-            return {"status": "error", "message": str(e)}
-
-    @mcp_instance.tool()
-    def ws_list_contents(
-        path: str, 
-        notebooks_modified_after: Optional[int] = None
-    ) -> dict:
-        """
-        Tool to list contents of workspace directory.
-        """
+            return [TextContent(type="text", text=f"Failed to get workspace status: {str(e)}")]
+    
+    async def handle_ws_list_contents(arguments: dict):
+        """Handle workspace contents listing."""
+        from mcp.types import TextContent
+        
         try:
             result = list_workspace_contents(
-                path=path, 
-                notebooks_modified_after=notebooks_modified_after
+                path=arguments["path"],
+                notebooks_modified_after=arguments.get("notebooks_modified_after")
             )
-            return {"status": "success", "data": result}
+            return [TextContent(type="text", text=f"Workspace contents listed successfully: {result}")]
         except Exception as e:
-            return {"status": "error", "message": str(e)}
+            return [TextContent(type="text", text=f"Failed to list workspace contents: {str(e)}")]
+    
+    # Register the tools and handlers
+    mcp_instance._tools.append(list_ws_tools)
+    mcp_instance._tool_handlers["ws_download_notebook"] = handle_ws_download_notebook
+    mcp_instance._tool_handlers["ws_get_status"] = handle_ws_get_status
+    mcp_instance._tool_handlers["ws_list_contents"] = handle_ws_list_contents

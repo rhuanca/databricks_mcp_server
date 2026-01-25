@@ -149,71 +149,141 @@ def list_job_runs(
 def register_jobs_tools(mcp_instance):
     """Register Jobs service tools with the MCP server"""
     
-    @mcp_instance.tool()
-    def jobs_list(
-        limit: Optional[int] = 20,
-        expand_tasks: Optional[bool] = False,
-        name: Optional[str] = None,
-        page_token: Optional[str] = None
-    ) -> dict:
-        """
-        Tool to list jobs in Databricks workspace.
+    async def list_jobs_tools():
+        """List available Jobs tools."""
+        from mcp.types import Tool
+        return [
+            Tool(
+                name="jobs_list",
+                description="List jobs in Databricks workspace with optional filtering and pagination support.",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "limit": {
+                            "type": "integer",
+                            "default": 20,
+                            "description": "Number of jobs to return (1-100, default 20)"
+                        },
+                        "expand_tasks": {
+                            "type": "boolean",
+                            "default": False,
+                            "description": "Include task and cluster details in response"
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "Filter by exact job name (case insensitive)"
+                        },
+                        "page_token": {
+                            "type": "string",
+                            "description": "Token for pagination from previous request"
+                        }
+                    }
+                }
+            ),
+            Tool(
+                name="jobs_get",
+                description="Get detailed information about a specific job including tasks, schedules, and clusters.",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "job_id": {
+                            "type": "integer",
+                            "description": "The unique identifier of the job"
+                        }
+                    },
+                    "required": ["job_id"]
+                }
+            ),
+            Tool(
+                name="jobs_list_runs",
+                description="List job runs with filtering and pagination. Filter by job_id, completion status, run type, or time range.",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "job_id": {
+                            "type": "integer",
+                            "description": "Filter runs for specific job ID"
+                        },
+                        "active_only": {
+                            "type": "boolean",
+                            "description": "Filter to only active runs"
+                        },
+                        "completed_only": {
+                            "type": "boolean",
+                            "description": "Filter to only completed runs"
+                        },
+                        "limit": {
+                            "type": "integer",
+                            "default": 20,
+                            "description": "Number of runs to return (1-1000, default 20)"
+                        },
+                        "page_token": {
+                            "type": "string",
+                            "description": "Token for pagination"
+                        },
+                        "run_type": {
+                            "type": "string",
+                            "description": "Filter by run type (JOB_RUN, WORKFLOW_RUN, SUBMIT_RUN)"
+                        },
+                        "start_time_from": {
+                            "type": "integer",
+                            "description": "Filter runs started after this time (epoch ms)"
+                        },
+                        "start_time_to": {
+                            "type": "integer",
+                            "description": "Filter runs started before this time (epoch ms)"
+                        }
+                    }
+                }
+            )
+        ]
+    
+    async def handle_jobs_list(arguments: dict):
+        """Handle job listing."""
+        from mcp.types import TextContent
         
-        Returns jobs with optional filtering and pagination support.
-        Use expand_tasks=True to include detailed task and cluster information.
-        """
         try:
             result = list_jobs(
-                limit=limit,
-                expand_tasks=expand_tasks,
-                name=name,
-                page_token=page_token
+                limit=arguments.get("limit", 20),
+                expand_tasks=arguments.get("expand_tasks", False),
+                name=arguments.get("name"),
+                page_token=arguments.get("page_token")
             )
-            return {"status": "success", "data": result}
+            return [TextContent(type="text", text=f"Jobs listed successfully: {result}")]
         except Exception as e:
-            return {"status": "error", "message": str(e)}
-
-    @mcp_instance.tool()
-    def jobs_get(job_id: int) -> dict:
-        """
-        Tool to get detailed information about a specific job.
+            return [TextContent(type="text", text=f"Failed to list jobs: {str(e)}")]
+    
+    async def handle_jobs_get(arguments: dict):
+        """Handle job details retrieval."""
+        from mcp.types import TextContent
         
-        Returns complete job configuration including tasks, schedules, and clusters.
-        """
         try:
-            result = get_job(job_id)
-            return {"status": "success", "data": result}
+            result = get_job(arguments["job_id"])
+            return [TextContent(type="text", text=f"Job details retrieved successfully: {result}")]
         except Exception as e:
-            return {"status": "error", "message": str(e)}
-
-    @mcp_instance.tool()
-    def jobs_list_runs(
-        job_id: Optional[int] = None,
-        active_only: Optional[bool] = None,
-        completed_only: Optional[bool] = None,
-        limit: Optional[int] = 20,
-        page_token: Optional[str] = None,
-        run_type: Optional[str] = None,
-        start_time_from: Optional[int] = None,
-        start_time_to: Optional[int] = None
-    ) -> dict:
-        """
-        Tool to list job runs with filtering and pagination.
+            return [TextContent(type="text", text=f"Failed to get job details: {str(e)}")]
+    
+    async def handle_jobs_list_runs(arguments: dict):
+        """Handle job runs listing."""
+        from mcp.types import TextContent
         
-        Filter by job_id, completion status, run type, or time range.
-        Times should be in epoch milliseconds.
-        """
         try:
             result = list_job_runs(
-                job_id=job_id,
-                active_only=active_only,
-                completed_only=completed_only,
-                limit=limit,
-                page_token=page_token,
-                run_type=run_type,
-                start_time_from=start_time_from,
-                start_time_to=start_time_to
+                job_id=arguments.get("job_id"),
+                active_only=arguments.get("active_only"),
+                completed_only=arguments.get("completed_only"),
+                limit=arguments.get("limit", 20),
+                page_token=arguments.get("page_token"),
+                run_type=arguments.get("run_type"),
+                start_time_from=arguments.get("start_time_from"),
+                start_time_to=arguments.get("start_time_to")
             )
-            return {"status": "success", "data": result}
+            return [TextContent(type="text", text=f"Job runs listed successfully: {result}")]
         except Exception as e:
-            return {"status": "error", "message": str(e)}
+            return [TextContent(type="text", text=f"Failed to list job runs: {str(e)}")]
+    
+    # Register the tools and handlers
+    mcp_instance._tools.append(list_jobs_tools)
+    mcp_instance._tool_handlers["jobs_list"] = handle_jobs_list
+    mcp_instance._tool_handlers["jobs_get"] = handle_jobs_get
+    mcp_instance._tool_handlers["jobs_list_runs"] = handle_jobs_list_runs
