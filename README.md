@@ -61,26 +61,6 @@ Required for all services:
 - `DATABRICKS_HOST` - Your Databricks workspace hostname
 - `DATABRICKS_TOKEN` - Personal access token or service principal token
 
-## Migration from Individual Servers
-
-### Old Structure
-- `databricks_sql_mcp_server/` → `databricks_mcp_server/services/sql_service.py`
-- `databricks_uc_mcp_server/` → `databricks_mcp_server/services/uc_service.py`  
-- `databricks_ws_mcp_server/` → `databricks_mcp_server/services/ws_service.py`
-
-### Import Changes
-```python
-# Old imports
-from databricks_sql_mcp_server.sqlutils import execute_sql_statement
-from databricks_uc_mcp_server.uc_utils import list_unity_catalogs
-from databricks_ws_mcp_server.wsutils import download_databricks_notebook
-
-# New imports
-from databricks_mcp_server.services.sql_service import execute_sql_statement
-from databricks_mcp_server.services.uc_service import list_unity_catalogs
-from databricks_mcp_server.services.ws_service import download_databricks_notebook
-```
-
 ## Tool Naming Convention
 
 All MCP tools use service-prefixed naming:
