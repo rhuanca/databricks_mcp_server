@@ -36,7 +36,17 @@ databricks_mcp_server/
 
 ### As MCP Server (requires Python 3.10+)
 ```bash
-python -m databricks_mcp_server.server
+# Run with stdio transport (default)
+python -m databricks_mcp_server
+
+# Run with streamable HTTP transport
+python -m databricks_mcp_server --mode streamable-http
+```
+
+## Test
+```bash
+# with Inspector
+npx -y @modelcontextprotocol/inspector uv run python -m databricks_mcp_server
 ```
 
 ### As Python Library
