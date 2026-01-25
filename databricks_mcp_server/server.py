@@ -81,42 +81,38 @@ def _register_protocol_handlers(
 
     async def handle_initialize(request: InitializeRequest) -> InitializeResult:
         return InitializeResult(
-            serverInfo=Implementation(
-                name=SERVER_NAME,
-                version=SERVER_VERSION
-            ),
-            capabilities=ServerCapabilities(
-                tools=ToolsCapability()
-            ),
+            serverInfo=Implementation(name=SERVER_NAME, version=SERVER_VERSION),
+            capabilities=ServerCapabilities(tools=ToolsCapability()),
             protocolVersion=PROTOCOL_VERSION
         )
 
     async def handle_ping(request: PingRequest) -> None:
-        return None
+        pass
 
     async def handle_list_tools(request: ListToolsRequest) -> ListToolsResult:
         all_tools = []
         for tool_list_func in tools:
-            tool_list = await tool_list_func()
-            all_tools.extend(tool_list)
+            all_tools.extend(await tool_list_func())
         return ListToolsResult(tools=all_tools)
 
     async def handle_call_tool(request: CallToolRequest) -> CallToolResult:
-        name = request.params.name
-        arguments = request.params.arguments
-        if name not in tool_handlers:
-            raise ValueError(f"Unknown tool: {name}")
-        content = await tool_handlers[name](arguments)
+        tool_name = request.params.name
+        
+        if tool_name not in tool_handlers:
+            raise ValueError(f"Unknown tool: {tool_name}")
+        
+        handler = tool_handlers[tool_name]
+        content = await handler(request.params.arguments)
+        
         return CallToolResult(content=content)
 
     # Register handlers
-    handlers = {
+    server.request_handlers.update({
         InitializeRequest: handle_initialize,
         PingRequest: handle_ping,
         ListToolsRequest: handle_list_tools,
         CallToolRequest: handle_call_tool,
-    }
-    server.request_handlers.update(handlers)
+    })
 
 
 
