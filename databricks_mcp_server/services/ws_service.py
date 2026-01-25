@@ -114,7 +114,7 @@ def list_workspace_contents(
         }
 
 
-def register_ws_tools(mcp_instance):
+def register_ws_tools(server, tools, tool_handlers):
     """Register Workspace service tools with the MCP server"""
     
     async def list_ws_tools():
@@ -181,7 +181,7 @@ def register_ws_tools(mcp_instance):
     
     async def handle_ws_download_notebook(arguments: dict):
         """Handle notebook download."""
-        from mcp.types import TextContent
+        from mcp.types import TextContent, CallToolResult
         
         try:
             content = download_databricks_notebook(
@@ -192,37 +192,37 @@ def register_ws_tools(mcp_instance):
             if content:
                 # Convert bytes to string for JSON serialization
                 content_str = content.decode('utf-8') if isinstance(content, bytes) else content
-                return [TextContent(type="text", text=f"Notebook downloaded successfully: {content_str}")]
+                return CallToolResult(content=[TextContent(type="text", text=f"Notebook downloaded successfully: {content_str}")])
             else:
-                return [TextContent(type="text", text="No content returned")]
+                return CallToolResult(content=[TextContent(type="text", text="No content returned")])
         except Exception as e:
-            return [TextContent(type="text", text=f"Failed to download notebook: {str(e)}")]
+            return CallToolResult(content=[TextContent(type="text", text=f"Failed to download notebook: {str(e)}")])
     
     async def handle_ws_get_status(arguments: dict):
         """Handle workspace status retrieval."""
-        from mcp.types import TextContent
+        from mcp.types import TextContent, CallToolResult
         
         try:
             result = get_workspace_status(arguments["path"])
-            return [TextContent(type="text", text=f"Workspace status retrieved successfully: {result}")]
+            return CallToolResult(content=[TextContent(type="text", text=f"Workspace status retrieved successfully: {result}")])
         except Exception as e:
-            return [TextContent(type="text", text=f"Failed to get workspace status: {str(e)}")]
+            return CallToolResult(content=[TextContent(type="text", text=f"Failed to get workspace status: {str(e)}")])
     
     async def handle_ws_list_contents(arguments: dict):
         """Handle workspace contents listing."""
-        from mcp.types import TextContent
+        from mcp.types import TextContent, CallToolResult
         
         try:
             result = list_workspace_contents(
                 path=arguments["path"],
                 notebooks_modified_after=arguments.get("notebooks_modified_after")
             )
-            return [TextContent(type="text", text=f"Workspace contents listed successfully: {result}")]
+            return CallToolResult(content=[TextContent(type="text", text=f"Workspace contents listed successfully: {result}")])
         except Exception as e:
-            return [TextContent(type="text", text=f"Failed to list workspace contents: {str(e)}")]
+            return CallToolResult(content=[TextContent(type="text", text=f"Failed to list workspace contents: {str(e)}")])
     
     # Register the tools and handlers
-    mcp_instance._tools.append(list_ws_tools)
-    mcp_instance._tool_handlers["ws_download_notebook"] = handle_ws_download_notebook
-    mcp_instance._tool_handlers["ws_get_status"] = handle_ws_get_status
-    mcp_instance._tool_handlers["ws_list_contents"] = handle_ws_list_contents
+    tools.append(list_ws_tools)
+    tool_handlers["ws_download_notebook"] = handle_ws_download_notebook
+    tool_handlers["ws_get_status"] = handle_ws_get_status
+    tool_handlers["ws_list_contents"] = handle_ws_list_contents

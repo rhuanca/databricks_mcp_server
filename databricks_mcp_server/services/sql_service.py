@@ -88,7 +88,7 @@ def execute_sql_statement(
         raise Exception(f"SQL execution failed: {response.status_code} - {response.text}")
 
 
-def register_sql_tools(server) -> None:
+def register_sql_tools(server, tools, tool_handlers) -> None:
     """Register SQL service tools with the MCP server."""
 
     async def list_sql_tools():
@@ -105,7 +105,7 @@ def register_sql_tools(server) -> None:
 
     async def handle_sql_execute_statement(arguments: dict):
         """Handle SQL statement execution."""
-        from mcp.types import TextContent
+        from mcp.types import TextContent, CallToolResult
 
         try:
             result = execute_sql_statement(
@@ -121,13 +121,13 @@ def register_sql_tools(server) -> None:
                 byte_limit=arguments.get("byte_limit"),
                 row_limit=arguments.get("row_limit")
             )
-            return [TextContent(type="text", text=f"SQL execution successful: {result}")]
+            return CallToolResult(content=[TextContent(type="text", text=f"SQL execution successful: {result}")])
         except Exception as e:
-            return [TextContent(type="text", text=f"SQL execution failed: {str(e)}")]
+            return CallToolResult(content=[TextContent(type="text", text=f"SQL execution failed: {str(e)}")])
 
     # Register the tools and handlers
-    server._tools.append(list_sql_tools)
-    server._tool_handlers["sql_execute_statement"] = handle_sql_execute_statement
+    tools.append(list_sql_tools)
+    tool_handlers["sql_execute_statement"] = handle_sql_execute_statement
 
 
 def _get_sql_tool_schema() -> Dict[str, Any]:

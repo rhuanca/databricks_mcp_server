@@ -146,7 +146,7 @@ def list_job_runs(
         raise Exception(f"Error listing job runs: {response.status_code} - {response.text}")
 
 
-def register_jobs_tools(mcp_instance):
+def register_jobs_tools(server, tools, tool_handlers):
     """Register Jobs service tools with the MCP server"""
     
     async def list_jobs_tools():
@@ -240,7 +240,7 @@ def register_jobs_tools(mcp_instance):
     
     async def handle_jobs_list(arguments: dict):
         """Handle job listing."""
-        from mcp.types import TextContent
+        from mcp.types import TextContent, CallToolResult
         
         try:
             result = list_jobs(
@@ -249,23 +249,23 @@ def register_jobs_tools(mcp_instance):
                 name=arguments.get("name"),
                 page_token=arguments.get("page_token")
             )
-            return [TextContent(type="text", text=f"Jobs listed successfully: {result}")]
+            return CallToolResult(content=[TextContent(type="text", text=f"Jobs listed successfully: {result}")])
         except Exception as e:
-            return [TextContent(type="text", text=f"Failed to list jobs: {str(e)}")]
+            return CallToolResult(content=[TextContent(type="text", text=f"Failed to list jobs: {str(e)}")])
     
     async def handle_jobs_get(arguments: dict):
         """Handle job details retrieval."""
-        from mcp.types import TextContent
+        from mcp.types import TextContent, CallToolResult
         
         try:
             result = get_job(arguments["job_id"])
-            return [TextContent(type="text", text=f"Job details retrieved successfully: {result}")]
+            return CallToolResult(content=[TextContent(type="text", text=f"Job details retrieved successfully: {result}")])
         except Exception as e:
-            return [TextContent(type="text", text=f"Failed to get job details: {str(e)}")]
+            return CallToolResult(content=[TextContent(type="text", text=f"Failed to get job details: {str(e)}")])
     
     async def handle_jobs_list_runs(arguments: dict):
         """Handle job runs listing."""
-        from mcp.types import TextContent
+        from mcp.types import TextContent, CallToolResult
         
         try:
             result = list_job_runs(
@@ -278,12 +278,12 @@ def register_jobs_tools(mcp_instance):
                 start_time_from=arguments.get("start_time_from"),
                 start_time_to=arguments.get("start_time_to")
             )
-            return [TextContent(type="text", text=f"Job runs listed successfully: {result}")]
+            return CallToolResult(content=[TextContent(type="text", text=f"Job runs listed successfully: {result}")])
         except Exception as e:
-            return [TextContent(type="text", text=f"Failed to list job runs: {str(e)}")]
+            return CallToolResult(content=[TextContent(type="text", text=f"Failed to list job runs: {str(e)}")])
     
     # Register the tools and handlers
-    mcp_instance._tools.append(list_jobs_tools)
-    mcp_instance._tool_handlers["jobs_list"] = handle_jobs_list
-    mcp_instance._tool_handlers["jobs_get"] = handle_jobs_get
-    mcp_instance._tool_handlers["jobs_list_runs"] = handle_jobs_list_runs
+    tools.append(list_jobs_tools)
+    tool_handlers["jobs_list"] = handle_jobs_list
+    tool_handlers["jobs_get"] = handle_jobs_get
+    tool_handlers["jobs_list_runs"] = handle_jobs_list_runs

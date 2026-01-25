@@ -8,6 +8,9 @@ import asyncio
 import sys
 
 from databricks_mcp_server.server import create_databricks_mcp_server
+from mcp.server.models import InitializationOptions
+from mcp.server.stdio import stdio_server
+from mcp.types import ServerCapabilities, ToolsCapability
 
 
 def main() -> None:
@@ -34,9 +37,6 @@ def main() -> None:
 
 def _run_stdio_server(server) -> None:
     """Run the server with stdio transport."""
-    from mcp.server.stdio import stdio_server
-    from mcp.server.models import InitializationOptions
-    from mcp.types import ServerCapabilities, ToolsCapability
 
     async def run_stdio():
         async with stdio_server() as (read_stream, write_stream):

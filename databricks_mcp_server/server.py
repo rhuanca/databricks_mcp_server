@@ -10,7 +10,6 @@ A federated Model Context Protocol server that provides access to:
 All services use service-prefixed tool naming for clarity.
 """
 
-import asyncio
 from typing import Optional
 
 from mcp.server import Server
@@ -24,7 +23,6 @@ from mcp.types import (
     ListToolsResult,
     PingRequest,
     ServerCapabilities,
-    TextContent,
     ToolsCapability,
 )
 
@@ -54,20 +52,22 @@ def create_databricks_mcp_server(config: Optional[DatabricksConfig] = None) -> S
         config = DatabricksConfig()
 
     server = Server(name=SERVER_NAME)
-
-    # Initialize tool storage
     tools = []
     tool_handlers = {}
 
-    # Store references for service registration
-    server._tools = tools
-    server._tool_handlers = tool_handlers
+    # Register services and collect tools/handlers
+    service_registry = {
+        "sql": register_sql_tools,
+        "uc": register_uc_tools,
+        "ws": register_ws_tools,
+        "jobs": register_jobs_tools,
+    }
+    for service_name, register_func in service_registry.items():
+        if config.is_service_enabled(service_name):
+            register_func(server, tools, tool_handlers)
 
     # Register MCP protocol handlers
     _register_protocol_handlers(server, tools, tool_handlers)
-
-    # Register services based on configuration
-    _register_services(server, config)
 
     return server
 
@@ -80,7 +80,6 @@ def _register_protocol_handlers(
     """Register MCP protocol request handlers."""
 
     async def handle_initialize(request: InitializeRequest) -> InitializeResult:
-        """Handle initialization request."""
         return InitializeResult(
             serverInfo=Implementation(
                 name=SERVER_NAME,
@@ -93,11 +92,9 @@ def _register_protocol_handlers(
         )
 
     async def handle_ping(request: PingRequest) -> None:
-        """Handle ping request."""
         return None
 
     async def handle_list_tools(request: ListToolsRequest) -> ListToolsResult:
-        """List all available tools."""
         all_tools = []
         for tool_list_func in tools:
             tool_list = await tool_list_func()
@@ -105,42 +102,20 @@ def _register_protocol_handlers(
         return ListToolsResult(tools=all_tools)
 
     async def handle_call_tool(request: CallToolRequest) -> CallToolResult:
-        """Call a tool by name with arguments."""
         name = request.params.name
         arguments = request.params.arguments
-
         if name not in tool_handlers:
             raise ValueError(f"Unknown tool: {name}")
+        return await tool_handlers[name](arguments)
 
-        result = await tool_handlers[name](arguments)
-
-        # Normalize result to CallToolResult
-        if isinstance(result, list):
-            return CallToolResult(content=result)
-        elif isinstance(result, CallToolResult):
-            return result
-        else:
-            # For other types, convert to text content
-            return CallToolResult(
-                content=[TextContent(type="text", text=str(result))]
-            )
-
-    # Register handlers in the server's request_handlers dictionary
-    server.request_handlers[InitializeRequest] = handle_initialize
-    server.request_handlers[PingRequest] = handle_ping
-    server.request_handlers[ListToolsRequest] = handle_list_tools
-    server.request_handlers[CallToolRequest] = handle_call_tool
-
-
-def _register_services(server: Server, config: DatabricksConfig) -> None:
-    """Register enabled services with the server."""
-    service_registry = {
-        "sql": register_sql_tools,
-        "uc": register_uc_tools,
-        "ws": register_ws_tools,
-        "jobs": register_jobs_tools,
+    # Register handlers
+    handlers = {
+        InitializeRequest: handle_initialize,
+        PingRequest: handle_ping,
+        ListToolsRequest: handle_list_tools,
+        CallToolRequest: handle_call_tool,
     }
+    server.request_handlers.update(handlers)
 
-    for service_name, register_func in service_registry.items():
-        if config.is_service_enabled(service_name):
-            register_func(server)
+
+
