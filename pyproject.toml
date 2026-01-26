@@ -24,8 +24,8 @@ classifiers = [
     "Topic :: System :: Distributed Computing",
 ]
 dependencies = [
+    "fastmcp>=2.14.4",
     "httpx>=0.28.1",
-    "mcp[cli]>=1.26.0",
     "requests>=2.32.5",
     "starlette>=0.37.0",
     "uvicorn>=0.30.0",
