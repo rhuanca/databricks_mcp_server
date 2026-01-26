@@ -44,12 +44,6 @@ SERVER_NAME = "Databricks Unified MCP Server"
 # Note: This must be created before the decorators below are applied
 mcp = FastMCP(SERVER_NAME)
 
-
-# =====================
-# SQL Service Tools
-# =====================
-
-
 # =====================
 # SQL Service Tools
 # =====================
