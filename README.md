@@ -37,16 +37,24 @@ databricks_mcp_server/
 ### As MCP Server (requires Python 3.10+)
 ```bash
 # Run with stdio transport (default)
-python -m databricks_mcp_server
+uv run python -m databricks_mcp_server
 
 # Run with streamable HTTP transport
-python -m databricks_mcp_server --mode streamable-http
+uv run python -m databricks_mcp_server --transport streamable-http
+
+# Run with custom host/port
+uv run python -m databricks_mcp_server --transport streamable-http --host localhost --port 3000
 ```
 
 ## Test
 ```bash
-# with Inspector
+# Test with MCP Inspector (stdio mode)
 npx -y @modelcontextprotocol/inspector uv run python -m databricks_mcp_server
+
+# Test streamable-http with browser
+# 1. Start server: uv run python -m databricks_mcp_server --transport streamable-http --host localhost --port 3000
+# 2. Open inspector: npx -y @modelcontextprotocol/inspector
+# 3. Connect to: http://localhost:3000/mcp
 ```
 
 ### As Python Library
