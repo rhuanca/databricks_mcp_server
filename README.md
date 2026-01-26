@@ -47,6 +47,32 @@ uv run python -m databricks_mcp_server --transport streamable-http --port 3000
 
 ```
 
+### With Docker
+```bash
+# Build the Docker image
+docker build -t databricks-mcp-server .
+
+# Run with default settings (streamable-http on port 8000)
+docker run -p 8000:8000 \
+  -e DATABRICKS_HOST="your-workspace.cloud.databricks.com" \
+  -e DATABRICKS_TOKEN="your-token" \
+  databricks-mcp-server
+
+# Run on custom port (e.g., 3000)
+docker run -p 3000:3000 \
+  -e DATABRICKS_HOST="your-workspace.cloud.databricks.com" \
+  -e DATABRICKS_TOKEN="your-token" \
+  -e MCP_PORT="3000" \
+  databricks-mcp-server
+
+# Run with stdio transport
+docker run -it \
+  -e DATABRICKS_HOST="your-workspace.cloud.databricks.com" \
+  -e DATABRICKS_TOKEN="your-token" \
+  -e MCP_TRANSPORT="stdio" \
+  databricks-mcp-server
+```
+
 ## MCP Inspector
 ```bash
 # Test with MCP Inspector (stdio mode)
@@ -57,7 +83,14 @@ npx -y @modelcontextprotocol/inspector uv run python -m databricks_mcp_server
 # 2. Open inspector: npx -y @modelcontextprotocol/inspector
 # 3. In the inspector UI, connect using:
 #    - Transport: Streamable HTTP
-#    - URL: http://localhost:8000/mcp
+#    - URL: http://localhost:8000
+#
+# If using Docker:
+# 1. Start server: docker run -p 8000:8000 -e DATABRICKS_HOST="..." -e DATABRICKS_TOKEN="..." databricks-mcp-server
+# 2. Open inspector: npx -y @modelcontextprotocol/inspector
+# 3. In the inspector UI, connect using:
+#    - Transport: Streamable HTTP
+#    - URL: http://localhost:8000
 ```
 
 ### As Python Library
