@@ -65,12 +65,72 @@ docker run -p 3000:3000 \
   -e MCP_PORT="3000" \
   databricks-mcp-server
 
-# Run with stdio transport
+# Run with stdio transport (for terminal use)
 docker run -it \
   -e DATABRICKS_HOST="your-workspace.cloud.databricks.com" \
   -e DATABRICKS_TOKEN="your-token" \
   -e MCP_TRANSPORT="stdio" \
   databricks-mcp-server
+
+# For MCP client configurations (Claude, etc.) - use -i only, not -it
+docker run -i \
+  -e DATABRICKS_HOST="your-workspace.cloud.databricks.com" \
+  -e DATABRICKS_TOKEN="your-token" \
+  -e MCP_TRANSPORT="stdio" \
+  databricks-mcp-server
+```
+
+## MCP Client Configuration
+
+### Claude Desktop
+
+Add to your Claude Desktop configuration file (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS or `%APPDATA%\Claude\claude_desktop_config.json` on Windows):
+
+```json
+{
+  "mcpServers": {
+    "databricks_mcp_server": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "-e",
+        "DATABRICKS_HOST=your-workspace.cloud.databricks.com",
+        "-e",
+        "DATABRICKS_TOKEN=dapi1234567890abcdef",
+        "-e",
+        "MCP_TRANSPORT=stdio",
+        "databricks-mcp-server"
+      ]
+    }
+  }
+}
+```
+
+**Important Notes:**
+- Use `-i` flag only (not `-it`) for MCP clients
+- Docker daemon must be running before starting Claude
+- Replace `DATABRICKS_HOST` with your workspace URL (without `https://`)
+- Replace `DATABRICKS_TOKEN` with your Databricks personal access token
+- Restart Claude Desktop after updating the configuration
+
+### Alternative: Direct Python Execution
+
+If you prefer not to use Docker:
+
+```json
+{
+  "mcpServers": {
+    "databricks_mcp_server": {
+      "command": "uv",
+      "args": ["run", "python", "-m", "databricks_mcp_server"],
+      "env": {
+        "DATABRICKS_HOST": "your-workspace.cloud.databricks.com",
+        "DATABRICKS_TOKEN": "dapi1234567890abcdef"
+      }
+    }
+  }
+}
 ```
 
 ## MCP Inspector
