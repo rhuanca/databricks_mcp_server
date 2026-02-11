@@ -18,7 +18,8 @@ RUN uv pip install --system --no-cache -e .
 EXPOSE 8000
 
 # Set environment variables (can be overridden at runtime)
-ENV DATABRICKS_HOST="TOOVERWRITE"
+# NOTE: DATABRICKS_HOST must include the https:// scheme, e.g. https://your-workspace.cloud.databricks.com
+ENV DATABRICKS_HOST="https://TOOVERWRITE"
 ENV DATABRICKS_TOKEN="TOOVERWRITE"
 ENV MCP_TRANSPORT="streamable-http"
 ENV MCP_PORT="8000"

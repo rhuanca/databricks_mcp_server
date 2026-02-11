@@ -51,4 +51,11 @@ def get_databricks_base_url() -> str:
         Base URL (e.g., https://your-workspace.databricks.com)
     """
     host, _ = get_databricks_credentials()
-    return f"https://{host}"
+    # Strict requirement: DATABRICKS_HOST must start with https://
+    if not host.startswith("https://"):
+        raise EnvironmentError(
+            f"Environment variable {DATABRICKS_HOST_ENV} must start with 'https://'. "
+            "Set it like: https://your-workspace.cloud.databricks.com"
+        )
+    # Simplest normalization: drop any trailing slash
+    return host.rstrip('/')

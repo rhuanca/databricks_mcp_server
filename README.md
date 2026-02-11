@@ -54,27 +54,27 @@ docker build -t databricks-mcp-server .
 
 # Run with default settings (streamable-http on port 8000)
 docker run -p 8000:8000 \
-  -e DATABRICKS_HOST="your-workspace.cloud.databricks.com" \
+  -e DATABRICKS_HOST="https://your-workspace.cloud.databricks.com" \
   -e DATABRICKS_TOKEN="your-token" \
   databricks-mcp-server
 
 # Run on custom port (e.g., 3000)
 docker run -p 3000:3000 \
-  -e DATABRICKS_HOST="your-workspace.cloud.databricks.com" \
+  -e DATABRICKS_HOST="https://your-workspace.cloud.databricks.com" \
   -e DATABRICKS_TOKEN="your-token" \
   -e MCP_PORT="3000" \
   databricks-mcp-server
 
 # Run with stdio transport (for terminal use)
 docker run -it \
-  -e DATABRICKS_HOST="your-workspace.cloud.databricks.com" \
+  -e DATABRICKS_HOST="https://your-workspace.cloud.databricks.com" \
   -e DATABRICKS_TOKEN="your-token" \
   -e MCP_TRANSPORT="stdio" \
   databricks-mcp-server
 
 # For MCP client configurations (Claude, etc.) - use -i only, not -it
 docker run -i \
-  -e DATABRICKS_HOST="your-workspace.cloud.databricks.com" \
+  -e DATABRICKS_HOST="https://your-workspace.cloud.databricks.com" \
   -e DATABRICKS_TOKEN="your-token" \
   -e MCP_TRANSPORT="stdio" \
   databricks-mcp-server
@@ -95,7 +95,7 @@ Add to your Claude Desktop configuration file (`~/Library/Application Support/Cl
         "run",
         "-i",
         "-e",
-        "DATABRICKS_HOST=your-workspace.cloud.databricks.com",
+        "DATABRICKS_HOST=https://your-workspace.cloud.databricks.com",
         "-e",
         "DATABRICKS_TOKEN=dapi1234567890abcdef",
         "-e",
@@ -110,7 +110,7 @@ Add to your Claude Desktop configuration file (`~/Library/Application Support/Cl
 **Important Notes:**
 - Use `-i` flag only (not `-it`) for MCP clients
 - Docker daemon must be running before starting Claude
-- Replace `DATABRICKS_HOST` with your workspace URL (without `https://`)
+- Replace `DATABRICKS_HOST` with your workspace URL and include the scheme `https://` (for example: `https://your-workspace.cloud.databricks.com`)
 - Replace `DATABRICKS_TOKEN` with your Databricks personal access token
 - Restart Claude Desktop after updating the configuration
 
@@ -125,7 +125,7 @@ If you prefer not to use Docker:
       "command": "uv",
       "args": ["run", "python", "-m", "databricks_mcp_server"],
       "env": {
-        "DATABRICKS_HOST": "your-workspace.cloud.databricks.com",
+        "DATABRICKS_HOST": "https://your-workspace.cloud.databricks.com",
         "DATABRICKS_TOKEN": "dapi1234567890abcdef"
       }
     }
@@ -172,7 +172,7 @@ content = download_databricks_notebook("/Workspace/path/to/notebook")
 ## Environment Variables
 
 Required for all services:
-- `DATABRICKS_HOST` - Your Databricks workspace hostname
+- `DATABRICKS_HOST` - Your Databricks workspace URL including scheme, e.g. `https://your-workspace.cloud.databricks.com`
 - `DATABRICKS_TOKEN` - Personal access token or service principal token
 
 ## Tool Naming Convention
